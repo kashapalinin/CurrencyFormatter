@@ -37,7 +37,13 @@ public class CurrencyService: CurrencyServiceProtocol {
                 return
             }
             
-            self?.parser.parse(data: data, completion: completion)
+            guard let self = self else {
+                completion(.failure(URLError(.unknown)))
+                return
+            }
+            
+            let result = self.parser.parse(data: data)
+            completion(result.mapError { $0 })
         }
         
         task.resume()
