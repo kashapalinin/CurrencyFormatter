@@ -27,6 +27,11 @@ public class CurrencyService: CurrencyServiceProtocol {
         }
         
         let task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            guard let self = self else {
+                completion(.failure(URLError(.unknown)))
+                return
+            }
+            
             if let error = error {
                 completion(.failure(error))
                 return
@@ -34,11 +39,6 @@ public class CurrencyService: CurrencyServiceProtocol {
             
             guard let data = data else {
                 completion(.failure(URLError(.badServerResponse)))
-                return
-            }
-            
-            guard let self = self else {
-                completion(.failure(URLError(.unknown)))
                 return
             }
             
