@@ -6,7 +6,15 @@
 //
 import Foundation
 
-public struct CBCurrencyFormatter {
+public protocol ICurrencyFormatter {
+    func fetchCurrencies(completion: @escaping (Result<CurrencyResponse, Error>) -> Void)
+    func formatAmount(_ amount: Double, for currency: Currency) -> String?
+    func convertAmount(_ amount: Double, from sourceCurrency: Currency, to targetCurrency: Currency) -> Double
+    func findCurrency(by charCode: String, in response: CurrencyResponse) -> Currency?
+    func getCurrencySymbol(code: String) -> String
+}
+
+public struct CBCurrencyFormatter: ICurrencyFormatter {
     private let currencyService: CurrencyServiceProtocol
     private let formatter: CurrencyFormatterProtocol
     
@@ -15,7 +23,7 @@ public struct CBCurrencyFormatter {
         self.formatter = CurrencyFormatter()
     }
     
-    public init(service: CurrencyService, formatter: CurrencyFormatter) {
+    public init(service: CurrencyServiceProtocol, formatter: CurrencyFormatterProtocol) {
         self.currencyService = service
         self.formatter = formatter
     }
@@ -34,5 +42,16 @@ public struct CBCurrencyFormatter {
     
     public func findCurrency(by charCode: String, in response: CurrencyResponse) -> Currency? {
         return response.currencies.first { $0.charCode == charCode }
+    }
+    
+    public func getCurrencySymbol(code: String) -> String {
+        guard let url = Bundle.main.url(forResource: "CommonCurrency", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let jsonObject = try? JSONSerialization.jsonObject(with: data),
+              let currencyDict = jsonObject as? [String: [String: Any]] else {
+            return code
+        }
+        
+        return currencyDict[code.uppercased()]?["symbol_native"] as? String ?? ""
     }
 }
