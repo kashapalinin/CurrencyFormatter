@@ -45,7 +45,7 @@ public struct CBCurrencyFormatter: ICurrencyFormatter {
     }
     
     public func getCurrencySymbol(code: String) -> String {
-        guard let url = Bundle.main.url(forResource: "CommonCurrency", withExtension: "json"),
+        guard let url = Bundle.module.url(forResource: "CommonCurrency", withExtension: "json"),
               let data = try? Data(contentsOf: url),
               let jsonObject = try? JSONSerialization.jsonObject(with: data),
               let currencyDict = jsonObject as? [String: [String: Any]] else {
