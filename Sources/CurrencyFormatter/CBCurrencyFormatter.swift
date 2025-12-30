@@ -7,7 +7,7 @@
 import Foundation
 
 public protocol ICurrencyFormatter {
-    func fetchCurrencies(completion: @escaping (Result<CurrencyResponse, Error>) -> Void)
+    func fetchCurrencies() async throws -> CurrencyResponse
     func formatAmount(_ amount: Double, for currency: Currency) -> String?
     func convertAmount(_ amount: Double, from sourceCurrency: Currency, to targetCurrency: Currency) -> Double
     func findCurrency(by charCode: String, in response: CurrencyResponse) -> Currency?
@@ -28,8 +28,8 @@ public struct CBCurrencyFormatter: ICurrencyFormatter {
         self.formatter = formatter
     }
     
-    public func fetchCurrencies(completion: @escaping (Result<CurrencyResponse, Error>) -> Void) {
-        currencyService.fetchCurrencies(completion: completion)
+    public func fetchCurrencies() async throws -> CurrencyResponse {
+        try await currencyService.fetchCurrencies()
     }
     
     public func formatAmount(_ amount: Double, for currency: Currency) -> String? {

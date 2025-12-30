@@ -6,38 +6,37 @@
 //
 import Foundation
 
-import Foundation
-
 public struct CurrencyXMLParser {
     
     public init() {}
     
-    public func parse(data: Data) -> Result<CurrencyResponse, ParserError> {
-        let parserHelper = ParserHelper()
-        let xmlParser = XMLParser(data: data)
-        xmlParser.delegate = parserHelper
-        
-        if xmlParser.parse() {
-            if let response = parserHelper.response {
-                return .success(response)
+    public func parse(data: Data) async throws -> CurrencyResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            let parserHelper = ParserHelper()
+            let xmlParser = XMLParser(data: data)
+            xmlParser.delegate = parserHelper
+            
+            if xmlParser.parse() {
+                if let response = parserHelper.response {
+                    continuation.resume(returning: response)
+                } else {
+                    continuation.resume(throwing: ParserError.invalidData)
+                }
             } else {
-                return .failure(.invalidData)
+                let error = parserHelper.parserError ?? .unknownError
+                continuation.resume(throwing: error)
             }
-        } else {
-            let error = parserHelper.parserError ?? .unknownError
-            return .failure(error)
         }
     }
     
-    public func parse(xmlString: String) -> Result<CurrencyResponse, ParserError> {
+    public func parse(xmlString: String) async throws -> CurrencyResponse {
         guard let data = xmlString.data(using: .utf8) else {
-            return .failure(.invalidInput)
+            throw ParserError.invalidInput
         }
-        return parse(data: data)
+        return try await parse(data: data)
     }
 }
 
-// MARK: - Helper Class for XMLParserDelegate
 private class ParserHelper: NSObject {
     private var currentElement = ""
     private var currentCurrency: [String: String] = [:]

@@ -9,7 +9,7 @@
 import Foundation
 
 public protocol CurrencyServiceProtocol {
-    func fetchCurrencies(completion: @escaping (Result<CurrencyResponse, Error>) -> Void)
+    func fetchCurrencies() async throws -> CurrencyResponse
 }
 
 public class CurrencyService: CurrencyServiceProtocol {
@@ -18,34 +18,12 @@ public class CurrencyService: CurrencyServiceProtocol {
     
     public init() {}
     
-    public func fetchCurrencies(completion: @escaping (Result<CurrencyResponse, Error>) -> Void) {
-        var urlString = baseURL
-        
-        guard let url = URL(string: urlString) else {
-            completion(.failure(URLError(.badURL)))
-            return
+    public func fetchCurrencies() async throws -> CurrencyResponse {
+        guard let url = URL(string: baseURL) else {
+            throw URLError(.badURL)
         }
         
-        let task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
-            guard let self = self else {
-                completion(.failure(URLError(.unknown)))
-                return
-            }
-            
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(URLError(.badServerResponse)))
-                return
-            }
-            
-            let result = self.parser.parse(data: data)
-            completion(result.mapError { $0 })
-        }
-        
-        task.resume()
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return try await parser.parse(data: data)
     }
 }
