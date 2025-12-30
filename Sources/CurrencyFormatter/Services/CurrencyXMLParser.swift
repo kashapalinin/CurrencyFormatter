@@ -80,7 +80,6 @@ private class ParserHelper: NSObject {
     }
 }
 
-// MARK: - XMLParserDelegate
 extension ParserHelper: XMLParserDelegate {
     func parser(
         _ parser: XMLParser,
@@ -136,7 +135,6 @@ extension ParserHelper: XMLParserDelegate {
     }
 }
 
-// MARK: - Parser Errors
 extension CurrencyXMLParser {
     public enum ParserError: Error, LocalizedError {
         case invalidInput
